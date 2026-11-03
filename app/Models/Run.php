@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Enums\RunStatus;
 use App\Models\Agent;
+use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 class Run extends Model
 {
-    protected $fillable = ['workspace_id', 'agent_id', 'input', 'output', 'error', 'status'];
+    use BelongsToWorkspace;
+    protected $fillable = ['agent_id', 'input', 'output', 'error', 'status'];
 
     protected $attributes = ['status' => 'pending'];
 

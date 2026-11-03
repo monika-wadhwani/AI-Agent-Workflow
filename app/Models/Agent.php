@@ -2,20 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Agent extends Model
 {
-    protected $fillable = ['workspace_id', 'name', 'instructions', 'tools', 'max_steps'];
+    use BelongsToWorkspace;
+
+    protected $fillable = ['name', 'instructions', 'tools', 'max_steps'];
 
     protected function casts(): array
     {
         return ['tools' => 'array'];
-    }
-
-    public function workspace(): BelongsTo
-    {
-        return $this->belongsTo(Workspace::class);
     }
 
     public function runs(): HasMany

@@ -2,7 +2,11 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-
+use App\Models\Agent;
+use App\Models\Run;
+use App\Models\Workspace;
+use App\Support\CurrentWorkspace;
+use Illuminate\Support\Str;
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -44,7 +48,36 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function workspace(string $name = 'Acme'): Workspace
 {
-    // ..
+    return Workspace::create([
+        'name' => $name,
+        'slug' => Str::slug($name). '-'.Str::lower(Str::random(6))
+    ]);
+}
+
+/** Make this workspace the current tenant. */
+function actingInWorkspace(Workspace $workspace): Workspace
+{
+    app(CurrentWorkspace::class)->set($workspace);
+
+    return $workspace;
+}
+
+function newAgent(array $tools = [], int $maxSteps = 8): Agent
+{
+    return Agent::create([
+        'name' => 'Test agent',
+        'instructions' => 'Be helpful.',
+        'tools' => $tools,
+        'max_steps' => $maxSteps,
+    ]);
+}
+
+function newRun(Agent $agent, string $input = 'Do the thing'): Run
+{
+    return Run::create([
+        'agent_id' => $agent->id,
+        'input' => $input
+    ]);
 }
