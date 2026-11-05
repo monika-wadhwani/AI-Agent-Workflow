@@ -20,3 +20,14 @@ it('lets a waiting_approval run to running', function () {
 it('does not let a pending run to completed', function () {
     expect(RunStatus::Pending->canTransitionTo(RunStatus::Completed))->toBeFalse();
 });
+
+it('knows completed and failed are finished', function (){
+    expect(RunStatus::Completed->isFinished())->toBeTrue()
+    ->and(RunStatus::Failed->isFinished())->toBeTrue();
+});
+
+it('knows active statuses are not finished', function () {
+    expect(RunStatus::Pending->isFinished())->toBeFalse()
+        ->and(RunStatus::Running->isFinished())->toBeFalse()
+        ->and(RunStatus::WaitingApproval->isFinished())->toBeFalse();
+});

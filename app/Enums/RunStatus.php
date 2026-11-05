@@ -24,4 +24,9 @@ enum RunStatus: string
     {
         return in_array($next, $this->allowedNext(), true);
     }
+
+    public function isFinished(): bool
+    {
+        return $this === self::Completed || $this === self::Failed;
+    }
 }
