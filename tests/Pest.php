@@ -7,6 +7,12 @@ use App\Models\Run;
 use App\Models\Workspace;
 use App\Support\CurrentWorkspace;
 use Illuminate\Support\Str;
+use App\Agents\AgentRunner;
+use App\Agents\ToolRegistry;
+use App\Ai\AiResponse;
+use App\Ai\FakeAiProvider;
+use App\Contracts\AiProvider;
+use App\Contracts\Tool;
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -80,4 +86,26 @@ function newRun(Agent $agent, string $input = 'Do the thing'): Run
         'agent_id' => $agent->id,
         'input' => $input
     ]);
+}
+
+/** Script the model: it returns these responses in order. */
+
+function fakeAi(AiResponse ...$responses): FakeAiProvider
+{
+    $fake = new FakeAiProvider($responses);
+    app()->instance(AiProvider::class, $fake);
+
+    return $fake;
+}
+
+/** Hand a tool to the robot for this test. */
+function useTool(Tool $tool): Tool
+{
+    app(ToolRegistry::class)->register($tool);
+
+    return $tool;
+}
+function runner(): AgentRunner
+{
+    return app(AgentRunner::class);
 }
