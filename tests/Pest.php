@@ -13,6 +13,8 @@ use App\Ai\AiResponse;
 use App\Ai\FakeAiProvider;
 use App\Contracts\AiProvider;
 use App\Contracts\Tool;
+use App\Enums\WorkspaceRole;
+use App\Models\User;
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -108,4 +110,11 @@ function useTool(Tool $tool): Tool
 function runner(): AgentRunner
 {
     return app(AgentRunner::class);
+}
+function userIn(Workspace $workspace, WorkspaceRole $role = WorkspaceRole::Member): User
+{
+    $user = User::factory()->create();
+    $workspace->members()->attach($user, ['role' => $role->value]);
+
+    return $user;
 }

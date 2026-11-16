@@ -31,4 +31,11 @@ class CurrentWorkspace
             $this->id = $previous;
         }
     }
+
+    public function workspace(): ?workspace
+    {
+        return $this->id === null ? null : Workspace::find($this->id);
+    }
+
+    
 }
