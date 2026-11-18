@@ -14,26 +14,23 @@ class SetCurrentWorkspace
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function __construct(private CurrentWorkspace $current) {}
+    // public function __construct(private CurrentWorkspace $current) {}
     
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-       // Start clean: never trust a tenant left over from an earlier request.
-       $this->current->set(null);
+        $current = app(\App\Support\CurrentWorkspace::class);
+        $current->set(null);
 
-       $slug = $request->header('X-Workspace');
-
-       if(! is_string($slug) || $slug === ''){
-        abort(400, 'The X-Worspace header is required.');
-       }
-
-        $workspace = $request->user()?->workspaces()->where('slug', $slug)->first();
-
-        if ($workspace === null) {
-            abort(403, 'You do not belong to this workspace.');
+        $slug = $request->header('X-Workspace');
+        if (! $slug) {
+            abort(400, 'X-Workspace header is required.');
         }
 
-        $this->current->set($workspace);
+        $workspace = $request->user()?->workspaces()->where('slug', $slug)->first();
+        abort_if($workspace === null, 403);
+
+        $current->set($workspace);
+
         return $next($request);
     }
 }

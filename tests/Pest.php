@@ -15,6 +15,7 @@ use App\Contracts\AiProvider;
 use App\Contracts\Tool;
 use App\Enums\WorkspaceRole;
 use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -115,6 +116,16 @@ function userIn(Workspace $workspace, WorkspaceRole $role = WorkspaceRole::Membe
 {
     $user = User::factory()->create();
     $workspace->members()->attach($user, ['role' => $role->value]);
+
+    return $user;
+}
+
+/** Log in as a person on the guest list and name the room in every request. */
+function actingAsMemberOf(Workspace $workspace, WorkspaceRole $role = WorkspaceRole::Member): User
+{
+    $user = userIn($workspace, $role);
+    Sanctum::actingAs($user);
+    test()->withHeaders(['X-Workspace' => $workspace->slug]);
 
     return $user;
 }

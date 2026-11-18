@@ -2,28 +2,28 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
+use App\Agents\ToolRegistry;
+use App\Models\Agent;
+use App\Support\CurrentWorkspace;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class StoreAgentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return Gate::allows('create', [Agent::class, app(CurrentWorkspace::class)->workspace()]);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'instructions' => ['nullable', 'string', 'max:5000'],
+            'tools' => ['present', 'array'],
+            'tools.*' => ['string', Rule::in(app(ToolRegistry::class)->names())],
+            'max_steps' => ['sometimes', 'integer', 'between:1,20'],
         ];
     }
 }

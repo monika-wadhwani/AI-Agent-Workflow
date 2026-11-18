@@ -2,15 +2,13 @@
 
 namespace App\Policies;
 
+use App\Models\Run;
 use App\Models\User;
 
 class RunPolicy
 {
-    /**
-     * Create a new policy instance.
-     */
-    public function __construct()
+    public function view(User $user, Run $run): bool
     {
-        //
+        return $user->roleIn($run->workspace) !== null;
     }
 }

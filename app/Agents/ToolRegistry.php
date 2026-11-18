@@ -42,4 +42,9 @@ class ToolRegistry
 
         return $definitions;
     }
+
+    /** @return list<string> */
+    public function names(): array{
+        return array_keys($this->tools);
+    }
 }   

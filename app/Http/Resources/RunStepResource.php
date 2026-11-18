@@ -7,13 +7,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class RunStepResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'position' => $this->position,
+            'tool_name' => $this->tool_name,
+            'input' => $this->input,
+            'output' => $this->output,
+            'status' => $this->status->value,
+            'expires_at' => $this->expires_at,
+        ];
     }
 }

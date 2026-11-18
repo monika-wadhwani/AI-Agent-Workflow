@@ -18,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ToolRegistry::class, fn () => (new ToolRegistry)
         ->register(new HttpGetTool)
         ->register(new SendEmailTool));
-        $this->app->scoped(CurrentWorkspace::class);
+        $this->app->singleton(CurrentWorkspace::class);
     }
 
     /**
