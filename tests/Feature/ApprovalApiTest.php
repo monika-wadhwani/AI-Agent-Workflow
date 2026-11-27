@@ -90,3 +90,14 @@ it('cannot touch a step from another workspace', function () {
 
     Mail::assertNothingSent();
 });
+
+it('answers 410 when the approval window has passed', function () {
+    [$run, $step] = pausedRun($this->workspace);
+    actingAsMemberOf($this->workspace, WorkspaceRole::Owner);
+
+    $this->travel(25)->hours();
+
+    $this->postJson("/api/steps/{$step->id}/approve")->assertStatus(410);
+
+    Mail::assertNothingSent();
+});

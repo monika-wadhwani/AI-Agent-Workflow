@@ -9,4 +9,5 @@ enum StepStatus: string
     case Completed = 'completed';
     case Failed = 'failed';
     case Rejected = 'rejected';
+    case Expired = 'expired';
 }

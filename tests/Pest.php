@@ -1,12 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\Agent;
-use App\Models\Run;
-use App\Models\Workspace;
-use App\Support\CurrentWorkspace;
-use Illuminate\Support\Str;
 use App\Agents\AgentRunner;
 use App\Agents\ToolRegistry;
 use App\Ai\AiResponse;
@@ -14,8 +7,18 @@ use App\Ai\FakeAiProvider;
 use App\Contracts\AiProvider;
 use App\Contracts\Tool;
 use App\Enums\WorkspaceRole;
+use App\Models\Agent;
+use App\Models\Run;
+use App\Models\RunStep;
 use App\Models\User;
+use App\Models\Workspace;
+use App\Support\CurrentWorkspace;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\FakeTool;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -28,7 +31,7 @@ use Laravel\Sanctum\Sanctum;
 */
 
 pest()->extend(TestCase::class)
-  ->use(RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -45,7 +48,7 @@ pest()->extend(TestCase::class)
 expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
-pest()->extend(Tests\TestCase::class)->in('Live');
+pest()->extend(TestCase::class)->in('Live');
 /*
 |--------------------------------------------------------------------------
 | Functions
@@ -61,7 +64,7 @@ function workspace(string $name = 'Acme'): Workspace
 {
     return Workspace::create([
         'name' => $name,
-        'slug' => Str::slug($name). '-'.Str::lower(Str::random(6))
+        'slug' => Str::slug($name).'-'.Str::lower(Str::random(6)),
     ]);
 }
 
@@ -87,12 +90,11 @@ function newRun(Agent $agent, string $input = 'Do the thing'): Run
 {
     return Run::create([
         'agent_id' => $agent->id,
-        'input' => $input
+        'input' => $input,
     ]);
 }
 
 /** Script the model: it returns these responses in order. */
-
 function fakeAi(AiResponse ...$responses): FakeAiProvider
 {
     $fake = new FakeAiProvider($responses);
@@ -128,4 +130,15 @@ function actingAsMemberOf(Workspace $workspace, WorkspaceRole $role = WorkspaceR
     test()->withHeaders(['X-Workspace' => $workspace->slug]);
 
     return $user;
+}
+
+/** Pause a run on a risky tool and hand back the step that is waiting for a human. */
+function pausedStep(FakeTool $tool): RunStep
+{
+    useTool($tool);
+    fakeAi(AiResponse::withToolCall($tool->name()), AiResponse::withText('Done.'));
+
+    $run = runner()->start(newRun(newAgent([$tool->name()])));
+
+    return $run->steps()->first();
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Agents\AgentRunner;
+use App\Exceptions\ApprovalExpired;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RunResource;
 use App\Models\RunStep;
@@ -28,8 +29,10 @@ class StepApprovalController extends Controller
 
         try {
             $run = $action($step);
+        } catch (ApprovalExpired $e) {
+            abort(410, $e->getMessage()); // Gone: the window closed
         } catch (LogicException $e) {
-            abort(409, $e->getMessage());
+            abort(409, $e->getMessage()); // Conflict: already decided
         }
 
         return new RunResource($run->load('steps'));
