@@ -28,6 +28,12 @@ class AgentRunner
     {
         $run->transitionTo(RunStatus::Running);
 
+        return $this->execute($run);
+    }
+
+    /** Run the loop for a run that is already Running (a queue job claims it first). */
+    public function execute(Run $run): Run
+    {
         return $this->loop($run);
     }
 
@@ -50,7 +56,7 @@ class AgentRunner
         }
 
         if ($approved) {
-            $this->execute($step);
+            $this->executeStep($step);
         } else {
             $step->update(['status' => StepStatus::Rejected, 'output' => 'Rejected by a human reviewer.']);
         }
@@ -104,7 +110,7 @@ class AgentRunner
                     }
 
                     if ($status === StepStatus::Pending) {
-                        $this->execute($step);
+                        $this->executeStep($step);
                     }
                 }
             }
@@ -122,7 +128,7 @@ class AgentRunner
     }
 
     /** Run a tool; failures become step output so the model can recover. */
-    private function execute(RunStep $step): void
+    private function executeStep(RunStep $step): void
     {
         $tool = $this->tools->get($step->tool_name);
 

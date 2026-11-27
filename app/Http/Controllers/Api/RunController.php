@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Agents\AgentRunner;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRunRequest;
 use App\Http\Resources\RunResource;
+use App\Jobs\ExecuteRun;
 use App\Models\Agent;
 use App\Models\Run;
 use Illuminate\Http\JsonResponse;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Gate;
 
 class RunController extends Controller
 {
-    public function store(StoreRunRequest $request, string $agent, AgentRunner $runner): JsonResponse
+    public function store(StoreRunRequest $request, string $agent): JsonResponse
     {
         $agent = Agent::findOrFail($agent);
         Gate::authorize('start', $agent);
@@ -23,9 +23,10 @@ class RunController extends Controller
             'input' => $request->validated('input'),
         ]);
 
-        $run = $runner->start($run);
+        ExecuteRun::dispatch($run->id, $run->workspace_id);
 
-        return (new RunResource($run->load('steps')))->response()->setStatusCode(201);
+        // 202 Accepted: the work is queued, the client checks GET /api/runs/{id} for progress.
+        return (new RunResource($run->refresh()))->response()->setStatusCode(202);
     }
 
     public function show(string $run): RunResource
